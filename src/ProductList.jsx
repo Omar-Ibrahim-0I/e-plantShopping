@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
-import { addItem, removeItem, updateQuantity } from "./CartSlice";
+import { addItem, updateQuantity } from "./CartSlice";
 
 import "./ProductList.css";
 import CartItem from "./CartItem";
@@ -9,8 +9,12 @@ import CartItem from "./CartItem";
 function ProductList({ onHomeClick }) {
   const [showCart, setShowCart] = useState(false);
   const [showPlants, setShowPlants] = useState(false); // State to control the visibility of the About Us page
-  const [addedToCart, setAddedToCart] = useState({});
+  const cartItems = useSelector((state) => state.cart.items);
   const dispatch = useDispatch();
+
+  const isPlantInCart = (plantName) => {
+    return cartItems.some((item) => item.name === plantName);
+  };
 
   const plantsArray = [
     {
@@ -297,10 +301,6 @@ function ProductList({ onHomeClick }) {
 
   const handleAddToCart = (plant) => {
     dispatch(addItem(plant));
-    setAddedToCart((prevState) => ({
-      ...prevState,
-      [plant.name]: true,
-    }));
   };
 
   return (
@@ -329,7 +329,11 @@ function ProductList({ onHomeClick }) {
           </div>
           <div>
             {" "}
-            <a href="#" onClick={(e) => handleCartClick(e)} style={styleA}>
+            <a
+              href="#"
+              onClick={(e) => handleCartClick(e)}
+              style={{ styleA, position: "relative" }}
+            >
               <h1 className="cart">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -352,6 +356,9 @@ function ProductList({ onHomeClick }) {
                   ></path>
                 </svg>
               </h1>
+              <span id="cart_items_num" style={styleA}>
+                {cartItems.length}
+              </span>
             </a>
           </div>
         </div>
@@ -396,10 +403,13 @@ function ProductList({ onHomeClick }) {
                         <div className="product-cost">${plant.cost}</div>{" "}
                         {/* Display plant cost */}
                         <button
-                          className="product-button"
+                          className={`product-button ${isPlantInCart(plant.name) ? "added-to-cart" : ""}`}
                           onClick={() => handleAddToCart(plant)} // Handle adding plant to cart
+                          disabled={isPlantInCart(plant.name)}
                         >
-                          Add to Cart
+                          {isPlantInCart(plant.name)
+                            ? "Added to Cart"
+                            : "Add to Cart"}
                         </button>
                       </div>
                     ),
